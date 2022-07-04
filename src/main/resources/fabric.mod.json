@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "salir",
+  "version": "${version}",
+
+  "name": "salir",
+  "description": "Randomizes the Server List Image",
+  "authors": [
+    "Me!"
+  ],
+  "contact": {
+    "homepage": "",
+    "sources": ""
+  },
+
+  "license": "AGPL 3.0",
+  "icon": "assets/salir/icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "me.greysilly7.salir.ServerListImageRandomizer"
+    ]
+  },
+  "mixins": [
+    "salir.mixins.json"
+  ],
+
+  "depends": {
+    "fabricloader": ">=0.14.6",
+    "fabric": "*",
+    "minecraft": "~1.19",
+    "java": ">=17"
+  },
+  "suggests": {
+    "another-mod": "*"
+  }
+}
