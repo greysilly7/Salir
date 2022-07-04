@@ -6,14 +6,14 @@
   "name": "salir",
   "description": "Randomizes the Server List Image",
   "authors": [
-    "Me!"
+    "Greysilly7"
   ],
   "contact": {
     "homepage": "",
     "sources": ""
   },
 
-  "license": "AGPL 3.0",
+  "license": "LGPL-2",
   "icon": "assets/salir/icon.png",
 
   "environment": "*",
@@ -31,8 +31,5 @@
     "fabric": "*",
     "minecraft": "~1.19",
     "java": ">=17"
-  },
-  "suggests": {
-    "another-mod": "*"
   }
 }
