@@ -51,9 +51,9 @@ public class ServerHandshakeNetworkHandlerMixin {
      * @reason I need to set custom image :P
      */
     @Overwrite()
-    public void onHandshake(HandshakeC2SPacket packet) throws IOException {
+    public void onHandshake(HandshakeC2SPacket packet) {
         switch (packet.getIntendedState()) {
-            case LOGIN:
+            case LOGIN -> {
                 this.connection.setState(NetworkState.LOGIN);
                 if (packet.getProtocolVersion() != SharedConstants.getGameVersion().getProtocolVersion()) {
                     MutableText text;
@@ -68,43 +68,36 @@ public class ServerHandshakeNetworkHandlerMixin {
                 } else {
                     this.connection.setPacketListener(new ServerLoginNetworkHandler(this.server, this.connection));
                 }
-                break;
-            case STATUS:
+            }
+            case STATUS -> {
                 if (this.server.acceptsStatusQuery()) {
                     File servericonsDir = new File("./server-icons/");
-                    if (!servericonsDir.exists()) {
-                        ServerListImageRandomizer.LOGGER.error("Server Icons Dir doesn't exist, making now");
-                        Path path = Paths.get("./server-icons");
-                        Files.createDirectory(path);
+                    if (servericonsDir.listFiles()[0].exists()) {
+                        Optional<File> optional = Optional.of(getRandomElement(Objects.requireNonNull(servericonsDir.listFiles()))).filter(File::isFile);
 
+                        optional.ifPresent((file) -> {
+                            try {
+                                BufferedImage bufferedImage = ImageIO.read(file);
+                                Validate.validState(bufferedImage.getWidth() == 64, "Must be 64 pixels wide");
+                                Validate.validState(bufferedImage.getHeight() == 64, "Must be 64 pixels high");
+                                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                                ImageIO.write(bufferedImage, "PNG", byteArrayOutputStream);
+                                byte[] bs = Base64.getEncoder().encode(byteArrayOutputStream.toByteArray());
+                                String var10001 = new String(bs, StandardCharsets.UTF_8);
+                                server.getServerMetadata().setFavicon("data:image/png;base64," + var10001);
+                            } catch (Exception var5) {
+                                ServerListImageRandomizer.LOGGER.error("Couldn't load server icon", var5);
+                            }
 
+                        });
                     }
-                    Optional<File> optional = Optional.of(getRandomElement(Objects.requireNonNull(servericonsDir.listFiles()))).filter(File::isFile);
-
-                    optional.ifPresent((file) -> {
-                        try {
-                            BufferedImage bufferedImage = ImageIO.read(file);
-                            Validate.validState(bufferedImage.getWidth() == 64, "Must be 64 pixels wide", new Object[0]);
-                            Validate.validState(bufferedImage.getHeight() == 64, "Must be 64 pixels high", new Object[0]);
-                            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                            ImageIO.write(bufferedImage, "PNG", byteArrayOutputStream);
-                            byte[] bs = Base64.getEncoder().encode(byteArrayOutputStream.toByteArray());
-                            String var10001 = new String(bs, StandardCharsets.UTF_8);
-                            server.getServerMetadata().setFavicon("data:image/png;base64," + var10001);
-                        } catch (Exception var5) {
-                            ServerListImageRandomizer.LOGGER.error("Couldn't load server icon", var5);
-                        }
-
-                    });
-
                     this.connection.setState(NetworkState.STATUS);
                     this.connection.setPacketListener(new ServerQueryNetworkHandler(this.server, this.connection));
                 } else {
                     this.connection.disconnect(IGNORING_STATUS_REQUEST_MESSAGE);
                 }
-                break;
-            default:
-                throw new UnsupportedOperationException("Invalid intention " + packet.getIntendedState());
+            }
+            default -> throw new UnsupportedOperationException("Invalid intention " + packet.getIntendedState());
         }
 
     }
