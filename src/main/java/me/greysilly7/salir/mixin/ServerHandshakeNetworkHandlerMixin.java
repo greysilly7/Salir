@@ -1,27 +1,21 @@
 package me.greysilly7.salir.mixin;
 
 import me.greysilly7.salir.ServerListImageRandomizer;
-import net.minecraft.SharedConstants;
-import net.minecraft.network.ClientConnection;
-import net.minecraft.network.NetworkState;
 import net.minecraft.network.packet.c2s.handshake.HandshakeC2SPacket;
-import net.minecraft.network.packet.s2c.login.LoginDisconnectS2CPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerHandshakeNetworkHandler;
-import net.minecraft.server.network.ServerLoginNetworkHandler;
-import net.minecraft.server.network.ServerQueryNetworkHandler;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
 import org.apache.commons.lang3.Validate;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -39,6 +33,16 @@ public class ServerHandshakeNetworkHandlerMixin {
         return arr[ThreadLocalRandom.current().nextInt(arr.length)];
     }
 
+    private static BufferedImage imageToBufferedImage(Image im) {
+        BufferedImage bi = new BufferedImage
+                (im.getWidth(null),im.getHeight(null),BufferedImage.TYPE_INT_RGB);
+        Graphics bg = bi.getGraphics();
+        bg.drawImage(im, 0, 0, null);
+        bg.dispose();
+        return bi;
+    }
+
+
     @Inject(method = "onHandshake", at = @At("HEAD"))
     public void onHandshake(HandshakeC2SPacket packet, CallbackInfo ci) {
         File servericonsDir = new File("./server-icons/");
@@ -48,10 +52,10 @@ public class ServerHandshakeNetworkHandlerMixin {
             optional.ifPresent((file) -> {
                 try {
                     BufferedImage bufferedImage = ImageIO.read(file);
-                    Validate.validState(bufferedImage.getWidth() == 64, "Must be 64 pixels wide");
-                    Validate.validState(bufferedImage.getHeight() == 64, "Must be 64 pixels high");
+                    Image scaled = bufferedImage.getScaledInstance(64, 64, Image.SCALE_SMOOTH);
+
                     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                    ImageIO.write(bufferedImage, "PNG", byteArrayOutputStream);
+                    ImageIO.write(imageToBufferedImage(scaled), "PNG", byteArrayOutputStream);
                     byte[] bs = Base64.getEncoder().encode(byteArrayOutputStream.toByteArray());
                     String var10001 = new String(bs, StandardCharsets.UTF_8);
                     this.server.getServerMetadata().setFavicon("data:image/png;base64," + var10001);
@@ -62,4 +66,3 @@ public class ServerHandshakeNetworkHandlerMixin {
         }
     }
 }
-
