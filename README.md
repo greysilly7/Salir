@@ -7,3 +7,5 @@ This mod gets files from ``<MINECRAFT_SERVER_ROOT>/server-icons/`` and picks a r
 3. Done. Profit. Donzo.
 
 Server doesn't need to be restarted for new images to take effect
+
+DOWNLOAD (Modrinth): https://modrinth.com/mod/salir
